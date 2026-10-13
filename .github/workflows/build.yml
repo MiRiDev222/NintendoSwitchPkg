@@ -1,0 +1,49 @@
+name: Build NintendoSwitchPkg
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch: # Allows you to manually trigger the build anytime
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install Build Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential uuid-dev iasl git gcc-aarch64-linux-gnu python3 python3-distutils
+
+    - name: Checkout EDK2 Core
+      uses: actions/checkout@v4
+      with:
+        repository: tianocore/edk2
+        ref: edk2-stable202102 # Use a stable EDK2 base version compatible with the project
+        submodules: recursive
+        path: edk2
+
+    - name: Checkout NintendoSwitchPkg
+      uses: actions/checkout@v4
+      with:
+        path: edk2/NintendoSwitchPkg
+
+    - name: Build EDK2 BaseTools
+      run: |
+        make -C edk2/BaseTools
+
+    - name: Compile NintendoSwitchPkg Firmware
+      run: |
+        cd edk2
+        export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
+        . edksetup.sh
+        build -a AARCH64 -t GCC5 -p NintendoSwitchPkg/NintendoSwitch.dsc -b RELEASE
+
+    - name: Upload Compiled Binary Artifacts
+      uses: actions/artifacts@v4
+      with:
+        name: NintendoSwitchPkg-UEFI
+        path: edk2/Build/NintendoSwitch-AARCH64/RELEASE_GCC5/FV/
+        
