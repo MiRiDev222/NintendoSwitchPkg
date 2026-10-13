@@ -5,7 +5,7 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-  workflow_dispatch: # Allows you to manually trigger the build anytime
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: tianocore/edk2
-        ref: edk2-stable202102 # Use a stable EDK2 base version compatible with the project
+        ref: edk2-stable202102
         submodules: recursive
         path: edk2
 
@@ -42,7 +42,7 @@ jobs:
         build -a AARCH64 -t GCC5 -p NintendoSwitchPkg/NintendoSwitch.dsc -b RELEASE
 
     - name: Upload Compiled Binary Artifacts
-      uses: actions/artifacts@v4
+      uses: actions/upload-artifact@v4
       with:
         name: NintendoSwitchPkg-UEFI
         path: edk2/Build/NintendoSwitch-AARCH64/RELEASE_GCC5/FV/
